@@ -13,12 +13,23 @@ app.post("/todos",(req,res)=>{
     var postm = new ToDo({
         text:req.body.text
     })
-    postm.save().then((data)=>{
-        res.send(data)
-    }),(err)=>{
-        console.log("cannot saed to database",);
-        res.status(400).send(err);
+    // postm.save().then((data)=>{
+    //     res.send(data)
+    // },(err)=>{
+        
+    //     res.status(400).send(err);
+    // })
+
+    postm.save(function(err,data)
+{
+    if(err)
+    {
+        return(res.status(200).send(err));
     }
+    else{
+        res.send(data);
+    }
+})
 })
 
 
@@ -26,6 +37,8 @@ app.listen(3000,()=>
 {
     console.log("server has started");
 })
+
+module.exports = {app};
 
 
 
