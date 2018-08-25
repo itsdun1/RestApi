@@ -13,23 +13,34 @@ app.post("/todos",(req,res)=>{
     var postm = new ToDo({
         text:req.body.text
     })
-    // postm.save().then((data)=>{
-    //     res.send(data)
-    // },(err)=>{
+    postm.save().then((data)=>{
+        res.send(data)
+    },(err)=>{
         
-    //     res.status(400).send(err);
-    // })
+        res.status(400).send(err);
+    })
 
-    postm.save(function(err,data)
-{
-    if(err)
-    {
-        return(res.status(200).send(err));
-    }
-    else{
-        res.send(data);
-    }
+//     postm.save(function(err,data)
+// {
+//     if(err)
+//     {
+//         return(res.status(400).send(err));
+//     }
+//     else{
+//         res.send(data);
+//     }
+// })
 })
+
+
+app.get("/todos",(req,res)=>{
+    ToDo.find().then((data)=>{
+
+        res.send({data});
+    }),(err)=>{
+
+        res.status(400).send(err);
+    }
 })
 
 
