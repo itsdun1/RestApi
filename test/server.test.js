@@ -3,11 +3,34 @@ var request = require("supertest");
 var {ToDo} = require("./../models/ToDo");
 var {app} = require("./../server");
 
-beforeEach((done)=>{
-    ToDo.deleteMany({}).then(()=>{
-        done();
-    })
-})
+// const todos = [{
+//     text: 'First test todo'
+//   }, {
+//     text: 'Second test todo'
+//   }];
+
+
+// beforeEach((done)=>{
+//     ToDo.deleteMany({}).then(()=>{
+//         return ToDo.insertMany(todos);
+//     }).then(()=>{
+//         done();
+//     })
+// })
+
+
+const todos = [{
+    text: 'First test todo'
+  }, {
+    text: 'Second test todo'
+  }];
+  
+  beforeEach((done) => {
+    ToDo.deleteMany({}).then(() => {
+      return ToDo.insertMany(todos);
+    }).then(() => done());
+  });
+
 
 describe("server test",()=>{
 
@@ -25,13 +48,13 @@ describe("server test",()=>{
         .end((err,res)=>{
             if(err)
             {
-                return done(e);
+                return done(err);
 
             }
 
-            ToDo.find().then((data)=>{
+            ToDo.find({text}).then((data)=>{
                     expect(data.length).toBe(1);
-                    expect(data[0].text ).toBe(text);   
+                    // expect(data[0].text ).toBe(text);   
                     done();            
             }).catch((e)=>{
                 done(e);
@@ -58,7 +81,7 @@ describe("exercise empty",()=>{
                 return done(err);
             }
             ToDo.find().then((data)=>{
-                expect(data.length).toBe(1);
+                expect(data.length).toBe(3);
                 done();
             }).catch((e)=>
             {
@@ -69,3 +92,34 @@ describe("exercise empty",()=>{
     })
 
 })
+
+
+// describe("get request",()=>{
+//   it("should get data by get request",(done)=>{
+
+//     request(app)
+//         .get("/todos")
+//         .expect(200)
+//         .expect((res)=>{
+//             // expect(res.body.todos[0].text).toBeA(String);
+//             // expect(res.body.length).toBe(2);
+//             console.log(res.body);
+//         }).end(done);
+
+//   })
+    
+// })
+
+
+describe('GET /todos', () => {
+    it('should get all todos', (done) => {
+      request(app)
+        .get('/todos')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.todos.length).toBe(2);
+        })
+        .end(done);
+    });
+  });
+  
