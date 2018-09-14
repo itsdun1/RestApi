@@ -4,7 +4,7 @@ var {User} =require("./models/user");
 var express = require("express");
 var bodyparser = require("body-parser");
 var app = express();
-
+var {ObjectID} = require("mongodb");
 app.use(bodyparser.json());
 
 app.post("/todos",(req,res)=>{
@@ -43,6 +43,34 @@ app.get("/todos",(req,res)=>{
     }
 })
 
+
+app.get("/todos/:id",(req,res)=>{
+    var id = req.params.id;
+    // if(!ObjectId.isValid(id))
+    // {
+    //     return res.status(404).send({})
+    // }
+    if(!ObjectID.isValid(id))
+    {
+            res.send({text:"user not exist"})
+    }
+
+    ToDo.findById(id).then((data)=>{
+
+        if(!data)
+        {
+            res.status(404).send({});
+        }
+        else{
+           res.send(data);
+        }
+    }).catch((e)=>{
+
+        res.send({});
+      
+    })
+        
+})
 
 app.listen(3000,()=>
 {
