@@ -6,7 +6,7 @@ var bodyparser = require("body-parser");
 var app = express();
 var {ObjectID} = require("mongodb");
 app.use(bodyparser.json());
-var port = process.env.PORT || 3000;
+// var port = process.env.PORT || 3000;
 app.post("/todos",(req,res)=>{
 
     console.log(req.body);
@@ -93,7 +93,7 @@ app.delete("/todos/:id",(req,res)=>{
         })
 })
 
-app.listen(3000,()=>
+app.listen(process.env.PORT || 3000,()=>
 {
     console.log("server has started");
 })
