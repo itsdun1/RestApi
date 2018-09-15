@@ -2,10 +2,13 @@ var expect = require("expect");
 var request = require("supertest");
 var {ToDo} = require("./../models/ToDo");
 var {app} = require("./../server");
+var {ObjectID} = require("mongodb");
 
 // const todos = [{
+//     _id:new ObjectID(),
 //     text: 'First test todo'
 //   }, {
+//       _id:new ObjectID,
 //     text: 'Second test todo'
 //   }];
 
@@ -20,8 +23,10 @@ var {app} = require("./../server");
 
 
 const todos = [{
+    _id:new ObjectID(),
     text: 'First test todo'
   }, {
+    _id:new ObjectID(),
     text: 'Second test todo'
   }];
   
@@ -117,9 +122,38 @@ describe('GET /todos', () => {
         .get('/todos')
         .expect(200)
         .expect((res) => {
-          expect(res.body.todos.length).toBe(2);
+          expect(res.body.data.length).toBe(2);
         })
         .end(done);
     });
-  });
+ 
+it("should return correct id data",(done)=>{
+    request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)
+        .expect(200)
+        .expect((res)=>{
+            expect(res.body.data.text).toBe(todos[0].text);
+        }).end(done);
+
+})
+
+it("should return a 404 if todo is nmot found",(done)=>{
+        request(app)
+            .get(`/todos/${new ObjectID().toHexString()}`)
+            .expect(404)
+            .end(done);
+})
+
+it("should return 404 if invalid id id foun=s",(done)=>{
+    request(app)
+    .get("/todos/2345")
+    .expect(404)
+    .end(done);
+})
+
+
+
+});
   
+
+

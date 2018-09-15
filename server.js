@@ -6,7 +6,7 @@ var bodyparser = require("body-parser");
 var app = express();
 var {ObjectID} = require("mongodb");
 app.use(bodyparser.json());
-
+var port = process.env.PORT || 3000;
 app.post("/todos",(req,res)=>{
 
     console.log(req.body);
@@ -52,7 +52,7 @@ app.get("/todos/:id",(req,res)=>{
     // }
     if(!ObjectID.isValid(id))
     {
-            res.send({text:"user not exist"})
+            res.status(404).send({text:"user not exist"})
     }
 
     ToDo.findById(id).then((data)=>{
@@ -62,17 +62,17 @@ app.get("/todos/:id",(req,res)=>{
             res.status(404).send({});
         }
         else{
-           res.send(data);
+           res.send({data});
         }
     }).catch((e)=>{
 
-        res.send({});
+        res.status(404).send({});
       
     })
         
 })
 
-app.listen(3000,()=>
+app.listen(port,()=>
 {
     console.log("server has started");
 })
