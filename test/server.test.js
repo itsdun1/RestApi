@@ -24,10 +24,12 @@ var {ObjectID} = require("mongodb");
 
 const todos = [{
     _id:new ObjectID(),
-    text: 'First test todo'
+    text: 'First test todo',
+    completed:true
   }, {
     _id:new ObjectID(),
-    text: 'Second test todo'
+    text: 'Second test todo',
+    completed:false
   }];
   
   beforeEach((done) => {
@@ -201,5 +203,67 @@ describe("it should delete specified todo ",()=>{
     })
 })
   
+describe("it should update the todos",()=>{
+
+    it("should updatre the todo",((done)=>{
+            request(app)
+            .patch(`/todos/${todos[0]._id.toHexString()}`)
+            .send({
+                text:"wash cloths 2050",
+                completed:true
+            })
+            .expect(200)
+            .expect((res)=>{
+                expect(res.body.data.completed).toBe(true);
+                expect(res.body.data.completedAt).toBeA('number');
+                done()
+
+            }).end((err,res)=>{
+
+                if(err)
+                {
+                    return done(err);
+                }
+
+                ToDo.findById(todos[0]._id.toHexString()).then((data)=>{
+
+                    expect(data.text).toBe("wash cloths 2050");
+                }).catch((e)=>
+                {
+                    done(e);
+                })
+            })
+
+
+    }))
+
+    it("should clear completed at when  todo is not complete",((done)=>{
+        request(app)
+        .patch(`/todos/${todos[1]._id.toHexString()}`)
+        .send({
+            text:"ha ha ha",
+            completed:false
+        })
+        .expect(200)
+        .expect((res)=>{
+            expect(res.body.data.text).toBe("ha ha ha");
+            expect(res.body.data.completedAt).toNotExist();
+            done()
+        }).end((err,res)=>{
+                if(err)
+                {
+                    done(err);
+                }
+
+                ToDo.findById(todos[1]._id.toHexString()).then((data)=>{
+                    expect(data.text).toBe("ha ha ha")
+                }).catch((e)=>{
+                        done(e);
+                })
+        })
+
+    }))
+
+})
 
 
