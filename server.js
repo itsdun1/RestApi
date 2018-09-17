@@ -5,6 +5,7 @@ var express = require("express");
 var bodyparser = require("body-parser");
 var app = express();
 var {ObjectID} = require("mongodb");
+var lodash = require("lodash");
 app.use(bodyparser.json());
 // var port = process.env.PORT || 3000;
 app.post("/todos",(req,res)=>{
@@ -52,7 +53,7 @@ app.get("/todos/:id",(req,res)=>{
     // }
     if(!ObjectID.isValid(id))
     {
-            res.status(404).send({text:"user not exist"})
+            res.status(404).send({})
     }
 
     ToDo.findById(id).then((data)=>{
@@ -76,15 +77,15 @@ app.delete("/todos/:id",(req,res)=>{
 
         if(!ObjectID.isValid(req.params.id))
         {
-            res.status(404).send({text:"not found"})
+            res.status(404).send({})
         }
         ToDo.findByIdAndRemove(req.params.id).then((data)=>{
             if(data)
             {
-                res.status(200).send(data)
+                res.status(200).send({data})
             }
             else{
-                res.status(404).send(data)
+                res.status(404).send({data})
             }
 
         }).catch((e)=>
@@ -93,7 +94,36 @@ app.delete("/todos/:id",(req,res)=>{
         })
 })
 
-app.listen(process.env.PORT || 3000,()=>
+app.patch('/todos/:id',(req,res)=>{
+    var id = req.params.id;
+    var body = lodash.pick(req.body,  ['text','completed'])
+    if(lodash.isBoolean(body.completed) && body.completed)
+    {
+        body.completedAt = new Date().getTime();
+    }
+    else{
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    ToDo.findByIdAndUpdate(id,{$set:body},{new:true}).then((data)=>{
+            if(!data)
+            {
+                res.status(404).send({});
+            }
+            
+            else{
+                res.status(200).send({data});
+            }
+
+    }).catch((e)=>{
+
+        res.status(404).send({})
+    })
+
+})
+
+app.listen( 3000,()=>
 {
     console.log("server has started");
 })

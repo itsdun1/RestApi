@@ -154,6 +154,52 @@ it("should return 404 if invalid id id foun=s",(done)=>{
 
 
 });
+
+describe("it should delete specified todo ",()=>{
+
+    it("should remove a todo",((done)=>{
+            request(app)
+                .delete(`/todos/${todos[0]._id.toHexString()}`)
+                .expect(200)
+                .expect((res)=>{
+                    console.log(res.body.data._id,"this is gap ",todos[0]._id.toHexString());
+                    expect(res.body.data._id).toBe(todos[0]._id.toHexString());
+
+                }).end((err,res)=>{
+
+                    if(err)
+                    {
+                        return done(err);
+                    }
+
+                    ToDo.findById(todos[0]._id.toHexString()).then((data)=>{
+                        expect(data).toNotExist();
+                        done();
+                    }).catch((e)=>{
+                            done(e);
+                    })
+                })
+
+
+    }))
+
+    it("should return a 404 if todo not found",(done)=>{
+            request(app)
+            .delete(`/todos/${new ObjectID().toHexString()}`)
+            .expect(404)
+            .end(done);
+
+
+    })
+
+    it("should return a 404 when object id is invalid",(done)=>{
+            request(app)
+            .delete(`/todos/12662`)
+            .expect(404)
+            .end(done)
+
+    })
+})
   
 
 
