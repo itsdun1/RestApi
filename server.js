@@ -7,7 +7,7 @@ var app = express();
 var {ObjectID} = require("mongodb");
 var lodash = require("lodash");
 app.use(bodyparser.json());
-// var port = process.env.PORT || 3000;
+var port = process.env.PORT || 3000;
 app.post("/todos",(req,res)=>{
 
     console.log(req.body);
@@ -123,7 +123,7 @@ app.patch('/todos/:id',(req,res)=>{
 
 })
 
-app.listen( 3000,()=>
+app.listen( port,()=>
 {
     console.log("server has started");
 })
