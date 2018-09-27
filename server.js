@@ -2,6 +2,7 @@ var {mongoose} = require("./db/connect");
 var {ToDo} =require("./models/ToDo");
 var {User} =require("./models/user");
 var express = require("express");
+var {authenticate} = require("./middleware/authenticate");
 var bodyparser = require("body-parser");
 var app = express();
 var {ObjectID} = require("mongodb");
@@ -10,12 +11,16 @@ app.use(bodyparser.json());
 var port = process.env.PORT || 3000;
 app.post("/todos",(req,res)=>{
 
-    console.log(req.body);
+    // console.log(req.body);
     var postm = new ToDo({
         text:req.body.text
     })
+    
     postm.save().then((data)=>{
+        
         res.send(data)
+
+
     },(err)=>{
         
         res.status(400).send(err);
@@ -123,12 +128,67 @@ app.patch('/todos/:id',(req,res)=>{
 
 })
 
+
+app.post("/user",(req,res)=>{
+
+    var body = lodash.pick(req.body,['email','password']);
+    var user = new User(body);
+    user.save().then((data)=>{
+      return  user.generateAuthToken();
+       
+       
+       
+       
+        // if(!data)
+        // {
+        //     res.status(404).send({})
+        // }
+        // else{
+        //     res.status(200).send({data});
+        // }
+    }).then((token)=>{
+        res.header('x-auth',token).send(user);
+
+    }).catch((E)=>{
+        res.status(404).send(E);
+    })
+
+})
+
+// var authenticate = (req,res,next)=>{
+//     var token = req.header('x-auth');
+
+//     User.findbyToken(token).then((user)=>{
+
+//         if(!user){
+
+//            return Promise.reject();
+
+//         }
+
+//        req.user = user;
+//        req.token = token;
+//        next();
+
+//     }).catch((e)=>{
+//         res.status(401).send();
+//     })
+
+
+// }
+
+
+app.get("/user/me",authenticate,(req,res)=>{
+    res.send(req.user);
+})
+
 app.listen( port,()=>
 {
     console.log("server has started");
 })
 
 module.exports = {app};
+
 
 
 
