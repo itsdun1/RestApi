@@ -3,6 +3,9 @@ var request = require("supertest");
 var {ToDo} = require("./../models/ToDo");
 var {app} = require("./../server");
 var {ObjectID} = require("mongodb");
+var {todos } = require("./seed/seed");
+var {populateTodo,users,populateusers} = require("./seed/seed");
+var {User} = require("./../models/user")
 
 // const todos = [{
 //     _id:new ObjectID(),
@@ -22,23 +25,24 @@ var {ObjectID} = require("mongodb");
 // })
 
 
-const todos = [{
-    _id:new ObjectID(),
-    text: 'First test todo',
-    completed:true
-  }, {
-    _id:new ObjectID(),
-    text: 'Second test todo',
-    completed:false
-  }];
+// const todos = [{
+//     _id:new ObjectID(),
+//     text: 'First test todo',
+//     completed:true
+//   }, {
+//     _id:new ObjectID(),
+//     text: 'Second test todo',
+//     completed:false
+//   }];
   
-  beforeEach((done) => {
-    ToDo.deleteMany({}).then(() => {
-      return ToDo.insertMany(todos);
-    }).then(() => done());
-  });
+//   beforeEach((done) => {
+//     ToDo.deleteMany({}).then(() => {
+//       return ToDo.insertMany(todos);
+//     }).then(() => done());
+//   });
 
-
+beforeEach(populateTodo);
+beforeEach(populateusers);
 describe("server test",()=>{
 
     it('it should send the data via post request ',(done)=>{
@@ -266,4 +270,84 @@ describe("it should update the todos",()=>{
 
 })
 
+describe("/GET/users/me",()=>{
 
+    it("should authenticate user with corrected user",((done)=>{
+
+        request(app).
+        get("/user/me").
+        set('x-auth',users[0].tokens[0].token).
+        expect(200)
+        .expect((res)=>{
+            expect(res.body._id).toBe(users[0]._id.toHexString());
+            expect(res.body.email).toBe(users[0].email);
+        })
+        .end(done)
+
+    }))
+
+    it("should send 401 to unauthorized user",(done)=>{
+        request(app)
+        .get("/user/me")
+        .expect(401)
+        .expect((res)=>{
+            expect(res.body).toEqual({});
+        })
+        .end(done)
+    })
+})
+
+
+describe("POST/user",()=>{
+
+    var email_user = 'adityakalengp123@gmail.com';
+    var password_user = 'Aditya99'
+    it("should create an user",(done)=>{
+        request(app)
+        .post("/user")
+        .send({email:email_user,password:password_user})
+        .expect(200)
+        .expect((res)=>{
+            expect(res.headers['x-auth']).toExist()
+            expect(res.body._id).toExist()
+            expect(res.body.email).toBe(email_user)
+        })
+        .end((err)=>{
+            if(err)
+            {
+                return(done(err))
+            }
+
+            User.findOne({email:email_user}).then((data)=>{
+                expect(data).toExist()
+                expect(data.password).toNotBe(password_user)
+                expect(data.email).toBe(email_user)
+                done()
+            })
+            
+        })
+
+    })
+
+
+    it("should return validation error if  request invalid",(done)=>{
+
+        request(app)
+        .post('/user')
+        .send({
+            email:'ddhdhhd',
+            password:"ssk"
+        })
+        .expect(404)
+        .end(done)
+    })
+
+    it("should not create user when email is in use",(done)=>{
+        request(app)
+        .post("/user")
+        .send({email:'adityakalengp@gmail.com',
+        password:'adsdds'})
+        .expect(404)
+        .end(done)
+    })
+})
